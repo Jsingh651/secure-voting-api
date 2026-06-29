@@ -1,0 +1,15 @@
+# Secrets & certificates — never commit these
+.env
+*.pem
+flask_app/config/ca.pem
+docs/key.txt
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# OS / editor
+.DS_Store

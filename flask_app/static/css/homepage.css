@@ -1,0 +1,50 @@
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    transition: all ease;
+    scroll-behavior: smooth;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+
+.mainHeader{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #000000;
+}
+
+.leftHeader{
+    width: 35%;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+}
+.logoHeader{
+    width: 100px;
+
+    margin-left: 20px;
+}
+.rightHeader{
+    width: 65%;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+}
+
+.linkHeader{
+    margin: 0 20px ;
+    list-style-type: none;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+}
+a{
+    text-decoration: none;
+     color: white;
+    font-size: 18px;
+    font-weight: 600;
+
+}

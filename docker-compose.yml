@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: voting
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-votingpass}
+      POSTGRES_DB: votingdb
+    # No host port mapping: the database is only reachable by the web service
+    # over the internal compose network, never from outside the instance.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Schema is applied automatically the first time the volume is created.
+      - ./flask_app/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U voting -d votingdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: voting
+      DB_PASSWORD: ${DB_PASSWORD:-votingpass}
+      DB_NAME: votingdb
+      DB_SSLMODE: disable
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-prod}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-prod}
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
