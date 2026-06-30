@@ -1,4 +1,4 @@
-# Project Golf – Electronic Voting System
+# Project Golf: Electronic Voting System
 
 A secure electronic voting service built with **Flask (Python)** and
 **PostgreSQL**. It provides token-based authentication, rate limiting, a
