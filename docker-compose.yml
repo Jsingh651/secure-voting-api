@@ -34,5 +34,24 @@ services:
       - "8000:8000"
     restart: unless-stopped
 
+  # Reverse proxy: serves the app on 80/443 with automatic HTTPS (Let's Encrypt)
+  # for the domain in DOMAIN, so visitors use https://<domain> with no port.
+  caddy:
+    image: caddy:2
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  caddy_data:
+  caddy_config:

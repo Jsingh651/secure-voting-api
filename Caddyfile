@@ -1,0 +1,6 @@
+# Caddy auto-provisions a free Let's Encrypt HTTPS certificate for {$DOMAIN}
+# and reverse-proxies all traffic to the Flask app (gunicorn on port 8000).
+# Set DOMAIN in .env, e.g. DOMAIN=votesmartt.duckdns.org
+{$DOMAIN} {
+    reverse_proxy web:8000
+}
