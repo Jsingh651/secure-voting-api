@@ -1,37 +1,44 @@
 import os
-
+from flask import Flask, render_template
 from dotenv import load_dotenv
-from flask import Flask
-from flask_bcrypt import Bcrypt
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+from flask_mail import Mail
 
-# Load environment variables from a local .env file when present (dev only).
 load_dotenv()
 
 app = Flask(__name__)
-# Secret is read from the environment. The fallback is for local dev ONLY and
-# must never be used in production (set SECRET_KEY in your environment / .env).
-app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
+# Prefer an env-provided secret key in production
+app.secret_key = os.environ.get('SECRET_KEY', 'THISISASECRETKEYBUTCHANGEITORDONT6769420HEHEHEHA')
 
-# Password hashing.
-bcrypt = Bcrypt(app)
+# Mail configuration (read from environment)
+app.config['MAIL_SERVER'] = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('SMTP_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes')
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() in ('true', '1', 'yes')
+app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_USER')
+app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASSWORD')
+# Default sender (fallback to the username)
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', app.config.get('MAIL_USERNAME'))
 
-# Rate limiting. Defaults to in-memory storage; point RATELIMIT_STORAGE_URI at
-# Redis (e.g. redis://redis:6379) when running multiple workers/instances so the
-# limits are shared.
+# Initialize Flask-Mail
+mail = Mail(app)
+
+# Rate limiting (abuse protection). Tight per-route limits are applied to the
+# auth endpoints; this generous default just caps overall per-IP traffic.
+from flask_limiter import Limiter  # noqa: E402
+from flask_limiter.util import get_remote_address  # noqa: E402
+
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
-    default_limits=["200 per minute"],
+    default_limits=["500 per minute"],
     storage_uri=os.environ.get("RATELIMIT_STORAGE_URI", "memory://"),
 )
 
-# Importing the controllers registers their routes on `app`. Kept at the bottom
-# to avoid a circular import (controllers import `app`, `bcrypt`, `limiter`).
-from flask_app.controllers import (  # noqa: E402,F401
-    pageController,
-    userController,
-    electionController,
-    voteController,
-)
+
+@app.errorhandler(404)
+def page_not_found(e):
+	# import locally to avoid circular import at module import time
+	from flask_app.controllers.userController import get_user_session_data
+	# include user session data so template can show contextual CTAs
+	ctx = get_user_session_data()
+	return render_template('404.html', **ctx), 404
